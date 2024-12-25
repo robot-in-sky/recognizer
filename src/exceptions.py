@@ -1,0 +1,6 @@
+class AppError(Exception):
+    ...
+
+
+class S3ClientError(AppError):
+    ...

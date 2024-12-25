@@ -1,0 +1,96 @@
+[tool.poetry]
+name = "myfirstocr"
+version = "0.1.0"
+description = ""
+authors = ["Robot <d.rabotinskiy@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^2.1.3"
+svgelements = "^1.9.6"
+opencv-contrib-python = "^4.10.0.84"
+opencv-python = "^4.10.0.84"
+pytesseract = "^0.3.13"
+aiobotocore = "^2.15.2"
+pydantic = "^2.10.3"
+pydantic-settings = "^2.6.1"
+aio-pika = "^9.5.4"
+punq = "^0.7.0"
+uuid7 = "^0.1.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.9.0"
+ruff = "^0.4.1"
+ruff-lsp = "^0.0.53"
+pytest = "^8.2.1"
+pytest-asyncio = "^0.23.7"
+types-pytz = "^2024.1.0.20240417"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["app"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [# https://docs.astral.sh/ruff/rules
+    "ANN101", "ANN102", # Typing for self and cls is never required.
+    "ANN401", # Using typing with Any is permissible in certain cases.
+    "D100", "D101", "D102", "D103", "D104", "D105", "D106", "D107", # Documentation in our projects is always optional.
+    "D203", "D213", # Exclude conflicting rules. Use rules D211 and D212.
+    "D407", "D408", "D409", # Do not use the numpy-style docstrings with dashed underline.
+    "F403", # It is acceptable to import everything using * in certain cases.
+    "G004", # It is convenient to use f-strings in logging.
+    "TRY400", # It is acceptable to use logging.error in cases where logging the traceback is unnecessary.
+    "TD001", "TD002", "TD003", "TD004", "FIX002", # Disable rules for to-do in Zephyr project.
+    "RUF001", # Embedded Cyrillic characters are allowed.
+]
+fixable = ["ALL"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "F401", # Imported module in init files may be unused
+]
+"test_*.py" = [
+    "S101", # Using assert in tests is allowed.
+    "PLR2004", # Magic value comprison
+]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 120
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
+
+[tool.ruff.lint.isort]
+case-sensitive = true
+combine-as-imports = true
+known-first-party = ["app", "tests"]
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = [
+    "classmethod",
+]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = "tests"
+asyncio_mode = "auto"
+filterwarnings = '''
+  error
+  ignore::DeprecationWarning
+'''
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
