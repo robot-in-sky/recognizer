@@ -1,0 +1,1 @@
+from .document_recognizer import DocumentRecognizer
