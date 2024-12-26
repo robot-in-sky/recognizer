@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 
 from src.services.cv import DocumentRecognizer
-from src.services.file_storage import FileStorage, S3Client
+from src.services.storages import FileStorage, S3Client
 from src.settings import AppSettings
 
 SRC_PATH = "../tests/input/2.jpg"
