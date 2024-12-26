@@ -10,18 +10,19 @@ class Gender(StrEnum):
 
 
 class PassportDetails(Base):
-    surname: str
-    given_name: str
-    passport_no: str
-    country: str
-    birth_date: date
-    gender: Gender
-    birth_place: str
-    issue_date: date
-    expire_date: date
+    surname: str | None
+    given_name: str | None
+    passport_no: str | None
+    country: str | None
+    birth_date: date | None
+    gender: Gender | None
+    birth_place: str | None
+    issue_date: date | None
+    expire_date: date | None
 
 
 class PassportAttachments(Base):
-    scanned: str
-    photo: str
-    debug: str
+    source: str
+    scanned: str | None
+    photo: str | None
+    debug: str | None
