@@ -36,7 +36,7 @@ class RabbitMQClient:
             self,
             queue_name: str,
             on_message: Callable[[aio_pika.abc.AbstractIncomingMessage],
-                            Coroutine[Any, Any, None]], *,
+                                    Coroutine[Any, Any, None]], *,
             prefetch_count: int = 1,
             no_ack: bool = False,
     ) -> None:

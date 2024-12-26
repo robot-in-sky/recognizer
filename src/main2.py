@@ -8,6 +8,8 @@ from aio_pika.abc import AbstractIncomingMessage
 from src.io import RabbitMQClient, S3Client
 from src.settings import AppSettings
 
+from uuid_extensions import uuid7
+
 logging.basicConfig(level=logging.INFO)
 
 settings = AppSettings()
@@ -30,8 +32,8 @@ async def handle_message(message: AbstractIncomingMessage) -> None:
 async def main() -> None:
     await broker.publish("test_queue", Message(type="task", body=b"test111"))
     await broker.publish("test_queue", Message(type="task", body=b"test222"))
-    await broker.publish("recognize.request", Message(type="passport", body=json.dumps({"source": "sdfhyasdfyhasiogfhasdlghfdgbnm.png"}).encode()))
-    await broker.publish("recognize.results", Message(type="passport", body=json.dumps({"source": "sdfhyasdfyhasiogfhasdlghfdgbnm.png"}).encode()))
+    await broker.publish("recognition.requests", Message(type="passport", body=json.dumps({"source": "sdfhyasdfyhasiogfhasdlghfdgbnm.png"}).encode()))
+    await broker.publish("recognition.results", Message(type="passport", body=json.dumps({"source": "sdfhyasdfyhasiogfhasdlghfdgbnm.png"}).encode()))
     await broker.consume("test_queue", handle_message)
 
 if __name__ == "__main__":

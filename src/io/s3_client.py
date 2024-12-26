@@ -7,6 +7,7 @@ from src.settings import S3Settings
 
 
 class S3Client:
+
     def __init__(self, settings: S3Settings) -> None:
         self.service_name = "s3"
         self.config = {

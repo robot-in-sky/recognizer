@@ -114,3 +114,4 @@ cython_debug/
 env/*
 !env/*.example
 tests/input/*
+*.xcf
