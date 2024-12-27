@@ -6,13 +6,13 @@ from aio_pika import Message
 from aio_pika.abc import AbstractIncomingMessage
 
 from src.io import RabbitMQClient, S3Client
-from src.settings import AppSettings
+from src.settings import Settings
 
 from uuid_extensions import uuid7
 
 logging.basicConfig(level=logging.INFO)
 
-settings = AppSettings()
+settings = Settings()
 broker = RabbitMQClient(settings.rabbitmq)
 s3_client = S3Client(settings.s3)
 

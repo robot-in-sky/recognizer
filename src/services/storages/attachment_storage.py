@@ -1,4 +1,4 @@
-from src.io.s3_client import S3Client
+from src.io.s3.s3_client import S3Client
 
 
 class AttachmentStorage:

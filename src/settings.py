@@ -1,11 +1,11 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from src.config import ENV_FILE_ENCODING, ENV_FILE_PATH, ENV_NESTED_DELIMITER
-from src.settings.rabbitmq_settings import RabbitMQSettings
-from src.settings.s3_settings import S3Settings
+from src.io.rabbitmq import RabbitMQSettings
+from src.io.s3 import S3Settings
 
 
-class AppSettings(BaseSettings):
+class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ENV_FILE_PATH,
         env_file_encoding=ENV_FILE_ENCODING,

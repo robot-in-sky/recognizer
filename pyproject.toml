@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "recognized"
+name = "recognizer"
 version = "0.1.0"
 description = ""
 authors = ["robot_in_sky <d.rabotinskiy@gmail.com>"]
