@@ -168,20 +168,20 @@ class DocumentRecognizer:
 
 
     @staticmethod
-    def _recognize_field(name: str, img: np.ndarray) -> str:
+    def _recognize_field(id_: str, img: np.ndarray) -> str:
         config_eng = "--psm 7 -c tessedit_char_whitelist=' ./-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'"
         config_rus = "--psm 7 -c tessedit_char_whitelist=' ./-1234567890АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ'"
 
         text = pytesseract.image_to_string(img, lang="eng", config=config_eng)
         text = text.replace("\n\x0c", "")
 
-        if name in ["surname", "given_name", "country"]:
+        if id_ in ["surname", "given_name", "country"]:
             text = re.sub(r"[^A-Z]", "", text)
 
-        elif name in ["passport_no"]:
+        elif id_ in ["passport_no"]:
             text = re.sub(r"[^0-9\s]", "", text)
 
-        elif name == "gender":
+        elif id_ == "gender":
             text_eng = text
             text_rus = pytesseract.image_to_string(img, lang="rus", config=config_rus)
             text_rus = text_rus.replace("\n\x0c", "")
@@ -191,7 +191,7 @@ class DocumentRecognizer:
             elif ("F" in text_eng) or ("Ж" in text_rus):
                 text = "F"
 
-        elif name in ["birth_date", "issue_date", "expire_date"]:
+        elif id_ in ["birth_date", "issue_date", "expire_date"]:
             text = re.sub(r"[^0-9.\s]", "", text).strip()
             text = text.replace(" .", ".")
             text = text.replace(". ", ".")
@@ -201,12 +201,12 @@ class DocumentRecognizer:
             now = datetime.now()  # noqa: DTZ005
             year_diff = now.year - date.year
             text = "NA"
-            if (name == "birth_date" and (0 <= year_diff <= 100) or  # noqa: PLR2004
-                    name == "issue_date" and (0 <= year_diff <= 20) or  # noqa: PLR2004
-                        name == "expire_date" and (-20 <= year_diff <= 20)):  # noqa: PLR2004
+            if (id_ == "birth_date" and (0 <= year_diff <= 100) or  # noqa: PLR2004
+                    id_ == "issue_date" and (0 <= year_diff <= 20) or  # noqa: PLR2004
+                        id_ == "expire_date" and (-20 <= year_diff <= 20)):  # noqa: PLR2004
                 text = datetime.strftime(date, "%d.%m.%Y")
 
-        elif name == "birth_place":
+        elif id_ == "birth_place":
             text_eng = text
             text_rus = pytesseract.image_to_string(img, lang="rus", config=config_rus)
             text_rus = text_rus.replace("\n\x0c", "")
@@ -221,49 +221,56 @@ class DocumentRecognizer:
 
     def process_image(
             self, img: np.ndarray,
-    ) -> tuple[dict[str, str], np.ndarray, np.ndarray, np.ndarray]:
+    ) -> tuple[dict[str, str], dict[str, np.ndarray]]:
 
-        grid_output = ImageGrid()
+        grid_debug = ImageGrid()
 
         img = self._scale_to_ref(img)
-        grid_output.add(img, "Original")
+        grid_debug.add(img, "Original")
 
-        img_corr = self._correct_skew_by_ref_features(img)
-        grid_output.add(img_corr, "Corrected")
+        img_corrected = self._correct_skew_by_ref_features(img)
+        grid_debug.add(img_corrected, "Corrected")
 
         corners_top, corners_bottom, img_detect_top, img_detect_bottom \
-            = self._detect_top_and_bottom_page_corners(img_corr)
-        grid_output.add(img_detect_top, "Top page detection")
-        grid_output.add(img_detect_bottom, "Bottom page detection")
+            = self._detect_top_and_bottom_page_corners(img_corrected)
+        grid_debug.add(img_detect_top, "Top page detection")
+        grid_debug.add(img_detect_bottom, "Bottom page detection")
 
-        img_scan, markers_top, markers_bottom \
-            = self._adjust_pages_by_ref_frames(img_corr, corners_top, corners_bottom)
-        img_scan_cont = self._apply_adoptive_contrast(img_scan)
-        img_scan_sharp = self._apply_sharp_filter(img_scan_cont)
-        self._draw_markers(img_scan_sharp, markers_top, markers_bottom)
-        grid_output.add(img_scan_sharp, "Scanned")
-        grid_output.add(img_scan_cont, "Contrast + ROIs")
+        scan, markers_top, markers_bottom \
+            = self._adjust_pages_by_ref_frames(img_corrected, corners_top, corners_bottom)
+        scan_contrast = self._apply_adoptive_contrast(scan)
+        scan_contrast_sharp = self._apply_sharp_filter(scan_contrast)
+        self._draw_markers(scan_contrast_sharp, markers_top, markers_bottom)
+        grid_debug.add(scan_contrast_sharp, "Scanned")
 
-        ims_roi = self._extract_rois(img_scan_cont, draw=True)
+        rois = self._extract_rois(scan_contrast, draw=True)
+        grid_debug.add(scan_contrast, "ROIs")
+
         grid_rois = ImageGrid(columns=1, row_height=60)
-        for id_, img in ims_roi.items():
-            grid_rois.add(img, id_)
-        grid_output.add(grid_rois.render(), "Text detection")
+        for id_, roi in rois.items():
+            grid_rois.add(roi, id_)
+        grid_debug.add(grid_rois.render(), "Text detection")
 
-        ims_box = self._extract_text_boxes(ims_roi, draw=True)
+        boxes = self._extract_text_boxes(rois, draw=True)
         grid_boxes = ImageGrid(columns=1, row_height=60)
-        for id_, img in ims_box.items():
-            grid_boxes.add(img, id_)
-        grid_output.add(grid_boxes.render(), "Text boxes")
+        for id_, box in boxes.items():
+            grid_boxes.add(box, id_)
+        grid_debug.add(grid_boxes.render(), "Text boxes")
 
-        values = {}
-        for roi, im in ims_box.items():
-            values[roi] = self._recognize_field(roi, im)
+        details = {}
+        for id_, box in boxes.items():
+            details[id_] = self._recognize_field(id_, box)
 
-        photo = self._apply_adoptive_contrast(ims_roi["photo"])
+        photo = self._apply_adoptive_contrast(rois["photo"])
         photo = cv2.cvtColor(photo, cv2.COLOR_BGR2GRAY)
         photo = self._apply_sharp_filter(photo)
 
-        img_output = grid_output.render()
+        img_debug = grid_debug.render()
 
-        return values, img_scan_sharp, photo, img_output
+        attachments = {
+            "scanned": scan_contrast_sharp,
+            "photo": photo,
+            "debug": img_debug,
+        }
+
+        return details, attachments

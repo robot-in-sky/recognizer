@@ -5,7 +5,7 @@ from typing import Any
 
 import aio_pika
 
-from src.settings import RabbitMQSettings
+from .rabbitmq_settings import RabbitMQSettings
 
 
 class RabbitMQClient:
