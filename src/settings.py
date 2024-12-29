@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from src.config import ENV_FILE_ENCODING, ENV_FILE_PATH, ENV_NESTED_DELIMITER
 from src.io.rabbitmq import RabbitMQSettings
 from src.io.s3 import S3Settings
+from src.services.mq import DispatcherSettings
 
 
 class Settings(BaseSettings):
@@ -14,6 +15,7 @@ class Settings(BaseSettings):
 
     rabbitmq: RabbitMQSettings
     s3: S3Settings
+    dp: DispatcherSettings
 
     debug: bool = False
     log_level: str = "INFO"

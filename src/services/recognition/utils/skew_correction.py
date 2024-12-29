@@ -2,7 +2,8 @@ from collections.abc import Sequence
 
 import cv2
 import numpy as np
-from src.services.cv.utils.shapes import Line, Point, Rectangle, find_intersection, get_distance
+
+from .shapes import Line, Point, Rectangle, find_intersection, get_distance
 
 
 def correct_skew(
@@ -109,9 +110,9 @@ def detect_corners(  # noqa: C901, PLR0912
                 intersects.append(intersect)
 
     frame_corners = ((inner.p1, inner.p3),
-                (inner.p2, inner.p4),
-                (inner.p3, inner.p1),
-                (inner.p4, inner.p2))
+                     (inner.p2, inner.p4),
+                     (inner.p3, inner.p1),
+                     (inner.p4, inner.p2))
 
     detected = []
     for i in range(len(frame_corners)):

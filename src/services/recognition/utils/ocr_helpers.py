@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from src.services.cv.utils.shapes import Rectangle
+from .shapes import Rectangle
 
 
 def detect_box(src: np.ndarray, min_height: float) -> Rectangle:
