@@ -1,5 +1,8 @@
+from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum, auto
+
+import numpy as np
 
 from src.entities.base import Base
 
@@ -19,6 +22,13 @@ class PassportDetails(Base):
     birth_place: str | None
     issue_date: date | None
     expire_date: date | None
+
+
+@dataclass
+class PassportImages:
+    scanned: np.ndarray | None
+    photo: np.ndarray | None
+    debug: np.ndarray | None
 
 
 class PassportAttachments(Base):

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from enum import StrEnum, auto
 from uuid import UUID
 
@@ -33,6 +34,6 @@ class RecognitionResult(Base):
     type: RecognitionType
     status: RecognitionStatus
     message: str
-    duration: int
+    duration: timedelta
     details: RecognitionDetails | None = None
     attachments: RecognitionAttachments | None = None

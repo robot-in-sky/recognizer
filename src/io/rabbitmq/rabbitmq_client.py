@@ -5,6 +5,7 @@ from typing import Any
 
 import aio_pika
 
+from .exceptions import RabbitMQConnectionError
 from .rabbitmq_settings import RabbitMQSettings
 
 
@@ -12,22 +13,25 @@ class RabbitMQClient:
 
     def __init__(self, settings: RabbitMQSettings) -> None:
         self.settings = settings
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
 
     async def get_connection(self) -> aio_pika.abc.AbstractRobustConnection:
-        connection = await aio_pika.connect_robust(
-            url=self.settings.url,
-            reconnect_interval = self.settings.reconnect_interval)
-        self.logger.info("Connected to RabbitMQ")
+        try:
+            connection = await aio_pika.connect_robust(
+                url=self.settings.url,
+                reconnect_interval = self.settings.reconnect_interval)
+        except aio_pika.exceptions.CONNECTION_EXCEPTIONS as error:
+            raise RabbitMQConnectionError from error
+        self._logger.info("Connected to RabbitMQ")
         return connection
 
 
     async def wait_for_connection(self) -> aio_pika.abc.AbstractRobustConnection:
         try:
             return await self.get_connection()
-        except aio_pika.exceptions.CONNECTION_EXCEPTIONS as e:
-            self.logger.error(e)
+        except RabbitMQConnectionError as error:
+            self._logger.error(error)
             await asyncio.sleep(self.settings.reconnect_interval)
             return await self.wait_for_connection()
 
@@ -47,7 +51,7 @@ class RabbitMQClient:
             queue = await channel.declare_queue(
                 queue_name, durable=self.settings.durable_queues)
             await queue.consume(on_message, no_ack=no_ack)
-            self.logger.info("Waiting for messages")
+            self._logger.info("Waiting for messages")
             await asyncio.Future()
 
 
@@ -65,4 +69,4 @@ class RabbitMQClient:
                     queue_name, durable=self.settings.durable_queues)
                 await channel.default_exchange.publish(
                     message, routing_key=queue.name)
-                self.logger.info("Message sent")
+                self._logger.info("Message sent")
