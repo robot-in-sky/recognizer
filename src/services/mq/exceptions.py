@@ -1,5 +1,5 @@
 from src.exceptions import AppError
 
 
-class DispatcherError(AppError):
+class MQError(AppError):
     ...

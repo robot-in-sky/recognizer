@@ -4,7 +4,7 @@ from yarl import URL
 
 
 class RabbitMQSettings(BaseModel):
-    host: str = "localhost"
+    host: str
     port: int | None = 5672
     username: str = "guest"
     password: str | None = "guest"

@@ -28,7 +28,7 @@ class RecognitionStatus(StrEnum):
     ERROR = auto()
 
 
-class RecognitionResult(Base):
+class RecognitionResponse(Base):
     request_id: UUID
     request_timestamp: int
     type: RecognitionType

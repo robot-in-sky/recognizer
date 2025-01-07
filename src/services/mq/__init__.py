@@ -1,3 +1,3 @@
-from .dispatcher import Dispatcher, DispatcherSettings
+from .mq_dispatcher import MQDispatcher, MQSettings
 
-__all__ = ["Dispatcher", "DispatcherSettings"]
+__all__ = ["MQDispatcher", "MQSettings"]
