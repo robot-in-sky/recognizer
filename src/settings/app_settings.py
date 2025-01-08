@@ -1,17 +1,21 @@
-from src.io.rabbitmq import RabbitMQSettings
+from src.io.amqp import AMQPSettings
 from src.io.s3 import S3Settings
-from src.services.mq import MQSettings
-
-from .base_app_settings import BaseAppSettings
-from .log_settings import LogSettings
+from src.settings.app_settings_base import AppSettingsBase
+from src.settings.log_settings import LogSettings
 
 
-class AppSettings(BaseAppSettings):
+class AppSettings(AppSettingsBase):
 
     # Required settings
-    rabbitmq: RabbitMQSettings
+    amqp: AMQPSettings
     s3: S3Settings
 
     # Optional settings
-    mq: MQSettings = MQSettings()
     log: LogSettings = LogSettings()
+
+    request_queue_name: str | None = "recognition.request"
+    response_routing_base: str | None = "recognition.response"
+
+
+if __name__ == "__main__":
+    AppSettings.save_dotenv_example()
