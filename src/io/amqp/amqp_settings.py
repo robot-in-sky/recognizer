@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from yarl import URL
 
 
-class RabbitMQSettings(BaseModel):
+class AMQPSettings(BaseModel):
     host: str
     port: int | None = 5672
     username: str = "guest"
@@ -11,7 +11,7 @@ class RabbitMQSettings(BaseModel):
     ssl: bool = False
 
     reconnect_interval: int = 5
-    durable_queues: bool = False
+    durable: bool = False
 
     @property
     def url(self) -> URL:

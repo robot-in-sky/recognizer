@@ -34,6 +34,6 @@ class RecognitionResponse(Base):
     type: RecognitionType
     status: RecognitionStatus
     message: str
-    duration: timedelta
+    duration: timedelta | None
     details: RecognitionDetails | None = None
     attachments: RecognitionAttachments | None = None
