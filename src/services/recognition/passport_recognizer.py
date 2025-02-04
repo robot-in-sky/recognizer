@@ -19,7 +19,7 @@ from .utils.shapes import Point, Rectangle
 from .utils.skew_correction import adjust_corners, correct_skew, detect_corners
 
 
-class DocumentRecognizer:
+class PassportRecognizer:
     def __init__(self) -> None:
 
         ref_dir = Path(__file__).parent.joinpath("ref/").resolve()
@@ -51,6 +51,11 @@ class DocumentRecognizer:
             "photo",
         ]
         self.roi_upscale = 2
+
+        self.tesseract_config_eng = \
+            "--psm 7 -c tessedit_char_whitelist=' ./-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'"
+        self.tesseract_config_rus = \
+            "--psm 7 -c tessedit_char_whitelist=' ./-1234567890АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ'"
 
 
     def _scale_to_ref(self, img: np.ndarray) -> np.ndarray:
@@ -171,12 +176,9 @@ class DocumentRecognizer:
         return boxes
 
 
-    @staticmethod
-    def _recognize_field(id_: str, img: np.ndarray) -> Any:
-        config_eng = "--psm 7 -c tessedit_char_whitelist=' ./-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'"
-        config_rus = "--psm 7 -c tessedit_char_whitelist=' ./-1234567890АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ'"
-
-        text = pytesseract.image_to_string(img, lang="eng", config=config_eng)
+    def _recognize_field(self, id_: str, img: np.ndarray) -> Any:  # noqa: PLR0911
+        text = pytesseract.image_to_string(
+            img, lang="eng", config=self.tesseract_config_eng)
         text = text.replace("\n\x0c", "")
 
         match id_:
@@ -187,14 +189,13 @@ class DocumentRecognizer:
                 return re.sub(r"[^0-9\s]", "", text)
 
             case "gender":
-                text_rus = pytesseract.image_to_string(img, lang="rus", config=config_rus)
+                text_rus = pytesseract.image_to_string(
+                    img, lang="rus", config=self.tesseract_config_rus)
                 text_rus = text_rus.replace("\n\x0c", "")
-                gender = None
                 if ("M" in text) or ("М" in text_rus):
-                    gender = Gender.MALE
+                    return Gender.MALE
                 if ("F" in text) or ("Ж" in text_rus):
-                    gender = Gender.FEMALE
-                return gender
+                    return Gender.FEMALE
 
             case id_ if id_ in ["birth_date", "issue_date", "expire_date"]:
                 text = re.sub(r"[^0-9.\s]", "", text).strip()
@@ -214,11 +215,12 @@ class DocumentRecognizer:
                                     return date
 
             case "birth_place":
-                text_rus = pytesseract.image_to_string(img, lang="rus", config=config_rus)
+                text_rus = pytesseract.image_to_string(
+                    img, lang="rus", config=self.tesseract_config_rus)
                 text_rus = text_rus.replace("\n\x0c", "")
                 if ("/" in text) and ("/" in text_rus):
                     text_1 = text_rus.split("/")[0].strip()
-                    text_2 = text.split("/")[1].strip()
+                    text_2 = text.split("/")[-1].strip()
                     return f"{text_1} / {text_2}"
 
         return None

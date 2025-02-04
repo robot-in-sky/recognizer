@@ -3,12 +3,12 @@ from datetime import UTC, datetime
 
 import cv2
 
-from src.services.recognition import DocumentRecognizer
+from src.services.recognition import PassportRecognizer
 
 SRC_PATH = "../tests/input/2.jpg"
 
 async def main() -> None:
-    recognizer = DocumentRecognizer()
+    recognizer = PassportRecognizer()
 
     source = cv2.imread(SRC_PATH)
 

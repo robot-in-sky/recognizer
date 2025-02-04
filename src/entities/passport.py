@@ -31,8 +31,8 @@ class PassportImages:
     debug: np.ndarray | None
 
 
-class PassportAttachments(Base):
-    source: str
-    scanned: str | None
-    photo: str | None
-    debug: str | None
+class PassportFiles(StrEnum):
+    SOURCE = "source.png"
+    SCANNED = "scanned.png"
+    PHOTO = "photo.png"
+    DEBUG = "debug.png"

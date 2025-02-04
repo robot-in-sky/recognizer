@@ -1,73 +1,74 @@
 import asyncio
 import logging
 from concurrent.futures import ProcessPoolExecutor
-from datetime import UTC, datetime
+from typing import Any
+from uuid import UUID
 
-from src.deps import Dependencies
-from src.entities.passport import PassportAttachments
-from src.entities.recognition import RecognitionRequest, RecognitionResponse, RecognitionStatus
-from src.services.recognition import RecognitionError
-from src.services.storage import StorageClientError
+from aio_pika.patterns import JsonRPC
+from services.recognition import PassportRecognizer
+from services.storage import AttachmentStorage
+from settings import AppSettings, LogSettings
+
+from src.entities.passport import PassportFiles
+from src.entities.recognition import RecognitionResult, RecognitionType
+from src.io.amqp import AMQPClient
+from src.io.s3 import S3Client
 
 
 class Application:
-    def __init__(self, deps: Dependencies) -> None:
-        self.deps = deps
+    def __init__(self, settings: AppSettings) -> None:
+        self.configure_logging(settings.log)
+
+        self.settings = settings
+        self.storage = AttachmentStorage(S3Client(settings.s3))
+        self.recognizer = PassportRecognizer()
+
         self._logger = logging.getLogger(__name__)
 
 
-    async def handle_request(self, request: RecognitionRequest) -> RecognitionResponse:
-        request_id = str(request.id)
-        start_time = datetime.now(UTC)
+    @staticmethod
+    def configure_logging(settings: LogSettings) -> None:
+        logging.basicConfig(level=settings.level)
 
-        try:
-            source = await self.deps.storage.get_image(request_id, "source.png")
+    """
+    async def make_request(self) -> None:
+        request_id = str(uuid7())
+        image = cv2.imread(ROOT_DIR.joinpath("tests/input/2.jpg"))
+        await self.storage.add_image(request_id, "source.png", image)
+        result = await self.deps.rpc.proxy.recognize_passport(request_id=request_id)
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(result)
+    """
 
-            loop = asyncio.get_running_loop()
-            with ProcessPoolExecutor() as executor:
-                details, images = await loop.run_in_executor(
-                    executor, self.deps.recognizer.process_image, source,
-                )
-            scanned, photo, debug = await asyncio.gather(
-                self.deps.storage.add_image(request_id, "scanned.png", images.scanned),
-                self.deps.storage.add_image(request_id, "photo.png", images.photo),
-                self.deps.storage.add_image(request_id, "debug.png", images.debug),
+
+    async def recognize_passport(self, id_: str) -> dict[str, Any]:
+        uuid_ = UUID(id_)
+        source_img = await self.storage.get_image(uuid_, PassportFiles.SOURCE)
+
+        loop = asyncio.get_running_loop()
+        with ProcessPoolExecutor() as executor:
+            details, images = await loop.run_in_executor(
+                executor, self.recognizer.process_image, source_img,
             )
+        await asyncio.gather(
+            self.storage.add_image(uuid_, PassportFiles.SCANNED, images.scanned),
+            self.storage.add_image(uuid_, PassportFiles.PHOTO, images.photo),
+            self.storage.add_image(uuid_, PassportFiles.DEBUG, images.debug),
+        )
 
-            duration = datetime.now(UTC) - start_time
-            status, message = RecognitionStatus.SUCCESS, "ОК"
-            self._logger.info(f"Recognition status: {status}, duration: {duration}")
-
-            attachments = PassportAttachments(source=request.source,
-                                              scanned=scanned,
-                                              photo=photo,
-                                              debug=debug)
-
-            return RecognitionResponse(request_id=request.id,
-                                       request_timestamp=request.timestamp,
-                                       type=request.type,
-                                       status=status,
-                                       message=message,
-                                       duration=duration,
-                                       details=details,
-                                       attachments=attachments)
-
-        except RecognitionError as error:
-            status, message = RecognitionStatus.ERROR, "Recognition error"
-            self._logger.error(error)
-            self._logger.error(f"Recognition status: {status}, message: {message}")
-
-        except StorageClientError as error:
-            status, message = RecognitionStatus.ERROR, "Storage client error"
-            self._logger.error(error)
-            self._logger.error(f"Recognition status: {status}, message: {message}")
-
-        return RecognitionResponse(request_id=request.id,
-                                   request_timestamp=request.timestamp,
-                                   type=request.type,
-                                   status=status,
-                                   message=message)
+        return RecognitionResult(id=uuid_,
+                                 type=RecognitionType.PASSPORT,
+                                 details=details).model_dump(mode="json")
 
 
     async def start(self) -> None:
-        await self.deps.dispatcher.consume(self.handle_request)
+        amqp = AMQPClient(self.settings.amqp)
+        connection = await amqp.get_connection()
+        channel = await connection.channel()
+        self._logger.info("Waiting for messages")
+        rpc = await JsonRPC.create(channel)
+        await rpc.register("recognize_passport", self.recognize_passport)
+        try:
+            await asyncio.Future()
+        finally:
+            await connection.close()
