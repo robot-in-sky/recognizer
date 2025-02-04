@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import StrEnum
 
 import numpy as np
 
@@ -14,6 +15,6 @@ class CaptchaImages:
     debug: np.ndarray | None
 
 
-class CaptchaAttachments(Base):
-    source: str
-    debug: str | None
+class CaptchaFiles(StrEnum):
+    SOURCE = "source.png"
+    DEBUG = "debug.png"

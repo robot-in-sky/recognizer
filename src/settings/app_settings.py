@@ -13,9 +13,6 @@ class AppSettings(AppSettingsBase):
     # Optional settings
     log: LogSettings = LogSettings()
 
-    request_queue_name: str | None = "recognition.request"
-    response_routing_base: str | None = "recognition.response"
-
 
 if __name__ == "__main__":
     AppSettings.save_dotenv_example()

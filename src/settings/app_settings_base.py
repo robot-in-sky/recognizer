@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from types import UnionType
+from typing import Any
 
 from pydantic import BaseModel
 from pydantic_core import PydanticUndefined
@@ -20,24 +20,23 @@ class AppSettingsBase(BaseSettings):
     @classmethod
     def get_dotenv_example(cls) -> str:
 
-        def _get_env_field(*, prefix: str, name: str, required: bool, default: str | None) -> str:
+        def _get_env_field(*, prefix: str, name: str, required: bool, default: Any) -> str:
             output = "" if required else "# "
-            delimiter = cls.model_config["env_nested_delimiter"]
-            default = default or ""
-            if prefix != "":
-                output += f"{prefix.upper()}{delimiter}"
-            output += f"{name.upper()}={default}"
+            output += f"{prefix.upper()}{name.upper()}="
+            if default is not None:
+                output += f"{default}"
             return output
 
         def _get_env_fields_recursive(model_class: type[BaseModel], prefix: str) -> list[str]:
             lines = []
             for name, info in model_class.model_fields.items():
-                if (type(info.annotation) is not UnionType and
-                        issubclass(info.annotation, BaseModel)):
-                    lines.extend(_get_env_fields_recursive(info.annotation, prefix + name))
+                if isinstance(info.annotation, type) and issubclass(info.annotation, BaseModel):
+                    delimiter = cls.model_config["env_nested_delimiter"]
+                    _prefix = f"{prefix}{name}{delimiter}"
+                    lines.extend(_get_env_fields_recursive(info.annotation, _prefix))
                 else:
                     has_default = info.default is not PydanticUndefined
-                    default = str(info.default) if has_default else None
+                    default = info.default if has_default else None
                     field_output = _get_env_field(prefix=prefix, name=name,
                                        required=info.is_required(), default=default)
                     lines.append(field_output)

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/myfirstocr.iml" filepath="$PROJECT_DIR$/.idea/myfirstocr.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/recognizer.iml" filepath="$PROJECT_DIR$/.idea/recognizer.iml" />
     </modules>
   </component>
 </project>

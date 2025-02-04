@@ -1,4 +1,4 @@
-from .document_recognizer import DocumentRecognizer
+from .passport_recognizer import PassportRecognizer
 from .exceptions import RecognitionError
 
-__all__ = ["DocumentRecognizer", "RecognitionError"]
+__all__ = ["PassportRecognizer", "RecognitionError"]

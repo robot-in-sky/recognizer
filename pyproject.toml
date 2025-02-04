@@ -16,7 +16,6 @@ aiobotocore = "^2.15.2"
 pydantic = "^2.10.3"
 pydantic-settings = "^2.6.1"
 aio-pika = "^9.5.4"
-punq = "^0.7.0"
 uuid7 = "^0.1.0"
 
 [tool.poetry.group.dev]
