@@ -21,7 +21,7 @@ class PassportDetails(Base):
     gender: Gender | None
     birth_place: str | None
     issue_date: date | None
-    expire_date: date | None
+    expiry_date: date | None
 
 
 @dataclass

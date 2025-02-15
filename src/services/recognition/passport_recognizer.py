@@ -47,7 +47,7 @@ class PassportRecognizer:
             "gender",
             "birth_place",
             "issue_date",
-            "expire_date",
+            "expiry_date",
             "photo",
         ]
         self.roi_upscale = 2
@@ -197,21 +197,21 @@ class PassportRecognizer:
                 if ("F" in text) or ("Ж" in text_rus):
                     return Gender.FEMALE
 
-            case id_ if id_ in ["birth_date", "issue_date", "expire_date"]:
+            case id_ if id_ in ["birth_date", "issue_date", "expiry_date"]:
                 text = re.sub(r"[^0-9.\s]", "", text).strip()
                 text = text.replace(" .", ".")
                 text = text.replace(". ", ".")
                 text = text.replace(" ", ".")
                 try:
-                    date = datetime.strptime(text, "%d.%m.%Y").astimezone(UTC).date()
+                    date = datetime.strptime(text, "%d.%m.%Y")  # noqa: DTZ007
                 except ValueError:
                     pass
                 else:
-                    now = datetime.now(UTC).date()
+                    now = datetime.now().date()  # noqa: DTZ005
                     year_diff = now.year - date.year
                     if (id_ == "birth_date" and (0 <= year_diff <= 100) or  # noqa: PLR2004
                             id_ == "issue_date" and (0 <= year_diff <= 20) or  # noqa: PLR2004
-                                id_ == "expire_date" and (-20 <= year_diff <= 20)):  # noqa: PLR2004
+                                id_ == "expiry_date" and (-20 <= year_diff <= 20)):  # noqa: PLR2004
                                     return date
 
             case "birth_place":
