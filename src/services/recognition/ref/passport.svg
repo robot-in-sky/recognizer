@@ -126,12 +126,12 @@
      y="926"
      inkscape:label="issue_date" /><rect
      style="fill:none;stroke:#0000ff;stroke-width:4;stroke-dasharray:none;stroke-opacity:1"
-     id="expire_date"
+     id="expiry_date"
      width="116"
      height="28"
      x="307"
      y="969"
-     inkscape:label="expire_date" /><rect
+     inkscape:label="expiry_date" /><rect
      style="fill:none;stroke:#0000ff;stroke-width:4;stroke-dasharray:none;stroke-opacity:1"
      id="photo"
      width="180"
