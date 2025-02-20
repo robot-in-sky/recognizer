@@ -9,18 +9,18 @@ class AttachmentStorageBase:
         self._client = client
 
     @staticmethod
-    def _get_object_name(id_: UUID, basename: str) -> str:
+    def _get_object_name(id_: UUID | str, basename: str) -> str:
         return f"{id_}/{basename}"
 
-    async def add_bytes(self, id_: UUID, basename: str, data: bytes) -> str:
+    async def add_bytes(self, id_: UUID | str, basename: str, data: bytes) -> str:
         obj_name = self._get_object_name(id_, basename)
         await self._client.put_object(obj_name, data)
         return obj_name
 
-    async def get_bytes(self, id_: UUID, basename: str) -> bytes:
+    async def get_bytes(self, id_: UUID | str, basename: str) -> bytes:
         obj_name = self._get_object_name(id_, basename)
         return await self._client.get_object(obj_name)
 
-    async def delete(self, id_: UUID, basename: str) -> None:
+    async def delete(self, id_: UUID | str, basename: str) -> None:
         obj_name = self._get_object_name(id_, basename)
         await self._client.delete_object(obj_name)
