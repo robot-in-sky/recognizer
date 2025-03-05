@@ -182,11 +182,16 @@ class PassportRecognizer:
         text = text.replace("\n\x0c", "")
 
         match id_:
-            case id_ if id_ in ["surname", "given_name", "country"]:
+            case id_ if id_ in ["surname", "given_name"]:
                 return re.sub(r"[^A-Z]", "", text)
 
             case "passport_no":
                 return re.sub(r"[^0-9\s]", "", text)
+
+            case "country":
+                text = text.lower()
+                if text in ["rus", "kaz", "blr"]:
+                    return text
 
             case "gender":
                 text_rus = pytesseract.image_to_string(
