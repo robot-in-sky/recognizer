@@ -15,9 +15,11 @@ def sharp_filter(src: np.ndarray, *, strong: bool = False) -> np.ndarray:
     return cv2.filter2D(src, ddepth=-1, kernel=np.array(kernel))
 
 
-def clahe_filter(src: np.ndarray, *, clip_limit: float = 1) -> np.ndarray:
+def clahe_filter(src: np.ndarray, *,
+                 clip_limit: float = 1,
+                 grid_size: tuple = (8, 8)) -> np.ndarray:
     # CLAHE (Contrast Limited Adaptive Histogram Equalization)
-    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(8, 8))
+    clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=grid_size)
     lab = cv2.cvtColor(src, cv2.COLOR_BGR2LAB)  # convert from BGR to LAB color space
     l, a, b = cv2.split(lab)  # split on 3 different channels  # noqa: E741
     l2 = clahe.apply(l)  # apply CLAHE to the L-channel

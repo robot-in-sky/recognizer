@@ -1,6 +1,6 @@
 import re
 from collections.abc import Sequence
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -8,10 +8,10 @@ import cv2
 import numpy as np
 import pytesseract
 from numpy import ndarray
+from src.entities.passport import Gender, PassportDetails, PassportImages
 from svgelements import SVG
 
-from src.entities.passport import Gender, PassportDetails, PassportImages
-
+from .exceptions import CornerDetectionError, ImageMismatchError, TextRecognitionError
 from .utils.filters import clahe_filter, sharp_filter
 from .utils.image_grid import ImageGrid
 from .utils.ocr_helpers import detect_box
@@ -58,47 +58,82 @@ class PassportRecognizer:
             "--psm 7 -c tessedit_char_whitelist=' ./-1234567890АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ'"
 
 
-    def _scale_to_ref(self, img: np.ndarray) -> np.ndarray:
+    def scale_to_ref(self, img: np.ndarray) -> np.ndarray:
         resize_width = self._ref_img.shape[1]
         height, width = img.shape[:2]
+        resize_height = round(resize_width * height / width)
         if width == resize_width:
             return img.copy()
-        return cv2.resize(img, (resize_width, resize_width * height / width))
+        return cv2.resize(img, (resize_width, resize_height))
 
 
-    def _correct_skew_by_ref_features(self, img: np.ndarray) -> np.ndarray:
-        return correct_skew(img, self._ref_img)
+    def correct_skew_by_ref_features(self, img: np.ndarray) -> np.ndarray:
+        try:
+            return correct_skew(img, self._ref_img)
+        except ValueError:
+            raise ImageMismatchError from None
 
 
-    def _detect_top_and_bottom_page_corners(
+    def detect_top_and_bottom_page_corners(
             self, img: np.ndarray) -> tuple[list[Point], list[Point], np.ndarray, np.ndarray]:
 
-        detection_width = 60
-        edge_min_length = 40
+        detection_width = 40
+        edge_min_length = 80
 
-        # Detect page corners near the frame
+        # Detect top page corners
         corners_top, img_detect_top = detect_corners( img,
                                         roi_centerline=self._frame_top,
                                         roi_bandwidth=detection_width,
                                         edge_min_length=edge_min_length)
 
+        # Detect bottom page corners
         corners_bottom, img_detect_bottom = detect_corners( img,
                                                 roi_centerline=self._frame_bottom,
                                                 roi_bandwidth=detection_width,
                                                 edge_min_length=edge_min_length)
 
-        # Fold line should be common for top and bottom pages
-        corners_top[2] = corners_bottom[1]
-        corners_top[3] = corners_bottom[0]
+        # Common fold line
+        corners_top[2] = corners_bottom[1] or corners_top[2]
+        corners_top[3] = corners_bottom[0] or corners_top[3]
+        corners_bottom[1] = corners_top[2] or corners_bottom[1]
+        corners_bottom[0] = corners_top[3] or corners_bottom[0]
 
-        if (None in corners_top) and (None in corners_bottom):
-            msg = "Corners not found"
-            raise ValueError(msg)
+        # Refined external corner detection if fold line is detected
+        if None not in (corners_top[2], corners_top[3]):
+            fold_length = corners_top[2].x - corners_top[3].x
+            _frame_height = self._frame.height / 2 + detection_width / 2
+
+            detection_width = 70
+            edge_min_length = 140
+
+            if None in (corners_top[0], corners_top[1]):
+
+                # Refined top corners detection
+                _frame_top = Rectangle(corners_top[3].x, corners_top[3].y - _frame_height,
+                                        fold_length, _frame_height)
+                _corners_top, img_detect_top = detect_corners(img,
+                                                 roi_centerline=_frame_top,
+                                                 roi_bandwidth=detection_width,
+                                                 edge_min_length=edge_min_length)
+                corners_top[0] = corners_top[0] or _corners_top[0]
+                corners_top[1] = corners_top[1] or _corners_top[1]
+
+            if None in (corners_bottom[2], corners_bottom[3]):
+
+                # Refined bottom corners detection
+                _frame_bottom = Rectangle(corners_top[3].x, corners_top[3].y,
+                                       fold_length, _frame_height)
+                _corners_bottom, img_detect_bottom = detect_corners(img,
+                                                    roi_centerline=_frame_bottom,
+                                                    roi_bandwidth=detection_width,
+                                                    edge_min_length=edge_min_length)
+                corners_bottom[2] = corners_bottom[2] or _corners_bottom[2]
+                corners_bottom[3] = corners_bottom[3] or _corners_bottom[3]
 
         return corners_top, corners_bottom, img_detect_top, img_detect_bottom
 
 
-    def _adjust_pages_by_ref_frames(
+    def adjust_pages_by_ref_frames(
             self, img: np.ndarray,
             corners_top: Sequence[Point],
             corners_bottom: Sequence[Point]) -> tuple[ndarray, list[Point], list[Point]]:
@@ -119,7 +154,7 @@ class PassportRecognizer:
 
 
     @staticmethod
-    def _draw_markers(
+    def draw_markers(
             img: np.ndarray,
             markers_top: Sequence[Point],
             markers_bottom: Sequence[Point]) -> None:
@@ -129,16 +164,16 @@ class PassportRecognizer:
 
 
     @staticmethod
-    def _apply_adoptive_contrast(img: np.ndarray) -> np.ndarray:
+    def apply_adoptive_contrast(img: np.ndarray) -> np.ndarray:
         return clahe_filter(img, clip_limit=0.5)
 
 
     @staticmethod
-    def _apply_sharp_filter(img: np.ndarray) -> np.ndarray:
+    def apply_sharp_filter(img: np.ndarray) -> np.ndarray:
         return sharp_filter(img)
 
 
-    def _extract_rois(self, img: np.ndarray, *, draw: bool = False) -> dict[str, np.ndarray]:
+    def extract_rois(self, img: np.ndarray, *, draw: bool = False) -> dict[str, np.ndarray]:
         # Extract regions from source image
         ims_roi = {}
         for id_ in self.roi_ids:
@@ -155,8 +190,8 @@ class PassportRecognizer:
         return ims_roi
 
 
-    def _extract_text_boxes(self, rois: dict[str, np.ndarray],
-                                *, draw: bool = False) -> dict[str, np.ndarray]:
+    def extract_text_boxes(self, rois: dict[str, np.ndarray],
+                           *, draw: bool = False) -> dict[str, np.ndarray]:
         # Extract text boxes from regions
         boxes = {}
         for id_ in self.roi_ids:
@@ -168,15 +203,16 @@ class PassportRecognizer:
             box = detect_box(img, min_h)
             # Crop by box and apply upscale
             (x1, y1), (x2, y2) = box.p1.tup, box.p3.tup
-            boxes[id_] = cv2.resize(np.copy(img[y1:y2, x1:x2]), None,
-                                      fx=self.roi_upscale, fy=self.roi_upscale,
-                                      interpolation=cv2.INTER_CUBIC)
+            box_img = np.copy(img[y1:y2, x1:x2])
+            boxes[id_] = cv2.resize(box_img, None,
+                                    fx=self.roi_upscale, fy=self.roi_upscale,
+                                    interpolation=cv2.INTER_CUBIC)
             if draw:
                 cv2.rectangle(img, box.p1.tup, box.p3.tup, (255, 0, 0), 1)
         return boxes
 
 
-    def _recognize_field(self, id_: str, img: np.ndarray) -> Any:  # noqa: PLR0911
+    def recognize_field(self, id_: str, img: np.ndarray) -> Any:  # noqa: PLR0911, C901, PLR0912
         text = pytesseract.image_to_string(
             img, lang="eng", config=self.tesseract_config_eng)
         text = text.replace("\n\x0c", "")
@@ -234,25 +270,28 @@ class PassportRecognizer:
     def process_image(self, img: np.ndarray) -> tuple[PassportDetails, PassportImages]:
         grid_debug = ImageGrid()
 
-        img = self._scale_to_ref(img)
+        img = self.scale_to_ref(img)
         grid_debug.add(img, "Original")
 
-        img_corrected = self._correct_skew_by_ref_features(img)
+        img_corrected = self.correct_skew_by_ref_features(img)
         grid_debug.add(img_corrected, "Corrected")
 
         corners_top, corners_bottom, img_detect_top, img_detect_bottom \
-                    = self._detect_top_and_bottom_page_corners(img_corrected)
+                    = self.detect_top_and_bottom_page_corners(img_corrected)
         grid_debug.add(img_detect_top, "Top page detection")
         grid_debug.add(img_detect_bottom, "Bottom page detection")
 
+        if None in corners_top or None in corners_bottom:
+            raise CornerDetectionError
+
         scan, markers_top, markers_bottom \
-            = self._adjust_pages_by_ref_frames(img_corrected, corners_top, corners_bottom)
-        scan_contrast = self._apply_adoptive_contrast(scan)
-        scan_contrast_sharp = self._apply_sharp_filter(scan_contrast)
-        self._draw_markers(scan_contrast, markers_top, markers_bottom)
+            = self.adjust_pages_by_ref_frames(img_corrected, corners_top, corners_bottom)
+        scan_contrast = self.apply_adoptive_contrast(scan)
+        scan_contrast_sharp = self.apply_sharp_filter(scan_contrast)
+        self.draw_markers(scan_contrast, markers_top, markers_bottom)
         grid_debug.add(scan_contrast_sharp, "Scanned")
 
-        rois = self._extract_rois(scan_contrast, draw=True)
+        rois = self.extract_rois(scan_contrast, draw=True)
         grid_debug.add(scan_contrast, "ROIs")
 
         grid_rois = ImageGrid(columns=1, row_height=60)
@@ -260,7 +299,8 @@ class PassportRecognizer:
             grid_rois.add(roi, id_)
         grid_debug.add(grid_rois.render(), "Text detection")
 
-        boxes = self._extract_text_boxes(rois, draw=True)
+
+        boxes = self.extract_text_boxes(rois, draw=True)
         grid_boxes = ImageGrid(columns=1, row_height=60)
         for id_, box in boxes.items():
             grid_boxes.add(box, id_)
@@ -268,19 +308,21 @@ class PassportRecognizer:
 
         details_dict = {}
         for id_, box in boxes.items():
-            details_dict[id_] = self._recognize_field(id_, box)
+            details_dict[id_] = self.recognize_field(id_, box)
+
+        if None in (details_dict["surname"], details_dict["given_name"]):
+            raise TextRecognitionError
+
         details = PassportDetails(**details_dict)
 
-        photo = self._apply_adoptive_contrast(rois["photo"])
+        photo = self.apply_adoptive_contrast(rois["photo"])
         photo = cv2.cvtColor(photo, cv2.COLOR_BGR2GRAY)
-        photo = self._apply_sharp_filter(photo)
-
-        img_debug = grid_debug.render()
+        photo = self.apply_sharp_filter(photo)
 
         images = PassportImages(
             scanned=scan_contrast_sharp,
             photo=photo,
-            debug=img_debug,
+            debug=grid_debug.render(),
         )
 
         return details, images
