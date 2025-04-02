@@ -3,14 +3,17 @@ from collections.abc import Sequence
 import cv2
 import numpy as np
 
+from .filters import clahe_filter
 from .shapes import Line, Point, Rectangle, find_intersection, get_distance
 
 
-def correct_skew(
+def correct_skew(  # noqa: PLR0913
         src: np.ndarray,
         ref: np.ndarray,
-        max_features: int = 2000,
-        good_percent: float = 0.05,
+        max_features: int = 1000,
+        min_features: int = 50,
+        max_distance: float = 40.0,
+        ransac_threshold: float = 5.0,
 ) -> np.ndarray:
     # Image Features & Alignment with OpenCV
     # https://www.youtube.com/watch?v=_o6fSMCmNnQ
@@ -27,12 +30,15 @@ def correct_skew(
     matcher = cv2.DescriptorMatcher.create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMINGLUT)
     matches = matcher.match(descriptors1, descriptors2, None)
 
-    # Sort matches by score
-    matches = sorted(matches, key=lambda x: x.distance)
-
-    # Remove not good features
-    good_count = min(int(len(matches) * good_percent), 50)
-    matches = matches[:good_count]
+    # Extract good features
+    matches = [m for m in matches if m.distance <= max_distance]
+    matches = sorted(matches, key=lambda m: m.distance)
+    # print(len(matches))
+    # print(matches[0].distance)
+    # print(matches[len(matches)-1].distance)
+    if len(matches) < min_features:
+        msg = "Not enough matches are found"
+        raise ValueError(msg)
 
     # Extract location of good matches
     points1 = np.zeros((len(matches), 2), dtype=np.float32)
@@ -42,7 +48,7 @@ def correct_skew(
         points2[i, :] = keypoints2[match.trainIdx].pt
 
     # Find homography
-    h, mask = cv2.findHomography(points2, points1, cv2.RANSAC)
+    h, mask = cv2.findHomography(points2, points1, cv2.RANSAC, ransac_threshold)
 
     # Use homography to wrap image
     height, width, channels = src.shape
@@ -57,14 +63,23 @@ def detect_corners(  # noqa: C901, PLR0912
         edge_min_length: int,
     ) -> tuple[list[Point | None], np.ndarray | None]:
 
+    src = clahe_filter(src)
     src_gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    src_gray = cv2.GaussianBlur(src_gray, (5, 5), 0)
-
+    src_gray = cv2.GaussianBlur(src_gray, (9, 9), 0)
     output = cv2.cvtColor(src_gray.copy(), cv2.COLOR_GRAY2BGR)
 
     lsd = cv2.createLineSegmentDetector(0)
-    segments = lsd.detect(src_gray)[0]
 
+    # Vertical segments
+    src_gray_v = cv2.GaussianBlur(src_gray, (3, 17), 0)
+    segments_v = lsd.detect(src_gray_v)[0]
+
+    # Horizontal segments
+    src_gray_h = cv2.GaussianBlur(src_gray, (17, 3), 0)
+    segments_h = lsd.detect(src_gray_h)[0]
+    segments = np.concatenate((segments_v, segments_h))
+
+    # Inner frame
     inner = Rectangle(
         roi_centerline.x + roi_bandwidth / 2,
         roi_centerline.y + roi_bandwidth / 2,
@@ -73,6 +88,7 @@ def detect_corners(  # noqa: C901, PLR0912
     )
     cv2.rectangle(output, inner.p1.tup, inner.p3.tup, (0, 255, 0), 2)
 
+    # Outer frame
     outer = Rectangle(
         roi_centerline.x - roi_bandwidth / 2,
         roi_centerline.y - roi_bandwidth / 2,
@@ -81,6 +97,7 @@ def detect_corners(  # noqa: C901, PLR0912
     )
     cv2.rectangle(output, outer.p1.tup, outer.p3.tup, (0, 255, 0), 2)
 
+    # Filter edges between frames
     edges = []
     for segment in segments:
         line = Line(*segment[0])
@@ -92,6 +109,7 @@ def detect_corners(  # noqa: C901, PLR0912
             edges.append(line)
             cv2.line(output, line.p1.tup, line.p2.tup, (0, 255, 255), 2)
 
+    # Find all intersections
     intersects = []
     for i in range(len(edges)):
         for j in range(i + 1, len(edges)):
@@ -109,22 +127,24 @@ def detect_corners(  # noqa: C901, PLR0912
                     continue
                 intersects.append(intersect)
 
-    frame_corners = ((inner.p1, inner.p3),
-                     (inner.p2, inner.p4),
-                     (inner.p3, inner.p1),
-                     (inner.p4, inner.p2))
+    inner_frame_corners = ((inner.p1, inner.p3),
+                           (inner.p2, inner.p4),
+                           (inner.p3, inner.p1),
+                           (inner.p4, inner.p2))
 
+    # Find the intersections farthest from the opposite corner
     detected = []
-    for i in range(len(frame_corners)):
-        max_distance = get_distance(frame_corners[i][0], frame_corners[i][1])
+    for i in range(len(inner_frame_corners)):
+        max_distance = get_distance(inner_frame_corners[i][0], inner_frame_corners[i][1])
         corner = None
         for intersect in intersects:
-            distance = get_distance(intersect, frame_corners[i][1])
+            distance = get_distance(intersect, inner_frame_corners[i][1])
             if distance > max_distance:
                 max_distance = distance
                 corner = intersect
         detected.append(corner)
 
+    # Draw corners
     for corner in detected:
         if corner is not None:
             cv2.circle(output, corner.tup, 8, (0, 255, 255), -1)
@@ -139,6 +159,7 @@ def adjust_corners(
         *,
         margin: Sequence[int] | None = None,
 ) -> tuple[np.ndarray, list[Point]]:
+    """Perspective transform from source corner points to dest rectangle."""
     src_pts = np.float32([corner_points[0].tup, corner_points[1].tup,
                           corner_points[2].tup, corner_points[3].tup])
 

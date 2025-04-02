@@ -2,5 +2,7 @@
 <project version="4">
   <component name="RuffConfigService">
     <option name="globalRuffExecutablePath" value="C:\Python312\Scripts\ruff.exe" />
+    <option name="projectRuffExecutablePath" value="\\wsl$\Ubuntu-22.04\home\robot\projects\recognizer\.venv\bin\ruff" />
+    <option name="projectRuffLspExecutablePath" value="\\wsl$\Ubuntu-22.04\home\robot\projects\recognizer\.venv\bin\ruff-lsp" />
   </component>
 </project>

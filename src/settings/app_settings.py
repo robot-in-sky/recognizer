@@ -1,5 +1,5 @@
-from src.io.amqp import AMQPSettings
-from src.io.s3 import S3Settings
+from src.infrastructure.amqp import AMQPSettings
+from src.infrastructure.s3 import S3Settings
 from src.settings.app_settings_base import AppSettingsBase
 from src.settings.log_settings import LogSettings
 

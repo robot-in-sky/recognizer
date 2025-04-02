@@ -11,8 +11,8 @@ from settings import AppSettings, LogSettings
 
 from src.entities.passport import PassportFiles
 from src.entities.recognition import RecognitionResult, RecognitionType
-from src.io.amqp import AMQPClient
-from src.io.s3 import S3Client
+from src.infrastructure.amqp import AMQPClient
+from src.infrastructure.s3 import S3Client
 
 
 class Application:

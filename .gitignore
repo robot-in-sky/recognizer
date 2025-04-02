@@ -113,5 +113,6 @@ cython_debug/
 ### Custom
 env/*
 !env/*.example
-tests/input/*
+tests/unit/services/recognition/input/*
+tests/unit/services/recognition/output/*
 *.xcf
