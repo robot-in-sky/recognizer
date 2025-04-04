@@ -1,9 +1,15 @@
 version: '3.8'
+networks:
+  default:
+    external: true
+    name: shared-network
 services:
   bot:
     build:
       context: .
       dockerfile: Dockerfile
+    networks:
+      - default
     restart: always
     environment:
       AMQP__HOST: rabbitmq
