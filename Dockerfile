@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bullseye AS base
+FROM python:3.12-slim-bullseye
 ENV POETRY_VERSION=1.7.1 \
     PYTHONUNBUFFERED=1 \
     POETRY_HOME="/opt/poetry" \
