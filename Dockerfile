@@ -1,6 +1,6 @@
 FROM hdgigante/python-opencv:4.11.0-ubuntu
 
-ENV POETRY_VERSION=1.8.2 \
+ENV POETRY_VERSION=1.7.1 \
     PYTHONUNBUFFERED=1 \
     POETRY_HOME="/opt/poetry" \
     APP_DIR="/app"
@@ -8,9 +8,9 @@ ENV PATH="$POETRY_HOME/bin:$PATH" \
     PYTHONPATH=${APP_DIR}
 
 RUN python -m pip install --upgrade pip
-RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}"
+RUN pip install "poetry==${POETRY_VERSION}"
 RUN apt-get update  \
-    && apt-get install -y --no-install-recommends gcc git ssh libpq-dev \
+    && apt-get install -y --no-install-recommends gcc git ssh \
     && apt-get clean
 
 WORKDIR $APP_DIR
