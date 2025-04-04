@@ -319,10 +319,12 @@ class PassportRecognizer:
         photo = cv2.cvtColor(photo, cv2.COLOR_BGR2GRAY)
         photo = self.apply_sharp_filter(photo)
 
+        img_debug = grid_debug.render()
+
         images = PassportImages(
             scanned=scan_contrast_sharp,
             photo=photo,
-            debug=grid_debug.render(),
+            debug=img_debug,
         )
 
         return details, images
