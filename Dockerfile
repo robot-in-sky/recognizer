@@ -10,7 +10,6 @@ RUN pip install "poetry==${POETRY_VERSION}"
 RUN apt-get update  \
     && apt-get install -y --no-install-recommends gcc git ssh libpq-dev \
     && apt-get clean \
-RUN sudo apt install libgl1-mesa-glx
 WORKDIR $APP_DIR
 COPY pyproject.toml poetry.lock ./
 
