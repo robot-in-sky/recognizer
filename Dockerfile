@@ -10,7 +10,7 @@ RUN pip install "poetry==${POETRY_VERSION}"
 RUN apt-get update  \
     && apt-get install -y --no-install-recommends gcc git ssh libpq-dev \
     && apt-get clean \
-RUN apt-get install -y libglib2.0-0
+RUN apt-get install ffmpeg libsm6 libxext6  -y
 WORKDIR $APP_DIR
 COPY pyproject.toml poetry.lock ./
 
