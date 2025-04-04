@@ -8,6 +8,7 @@ from aio_pika.patterns import JsonRPC
 from services.recognition import PassportRecognizer
 from services.storage import AttachmentStorage
 from settings import AppSettings, LogSettings
+
 from src.entities.passport import PassportFiles
 from src.entities.recognition import RecognitionResult, RecognitionType
 from src.infrastructure.amqp import AMQPClient
