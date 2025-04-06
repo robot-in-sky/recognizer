@@ -20,3 +20,4 @@ services:
       S3__BUCKET_NAME: ${S3__BUCKET_NAME}
       S3__ACCESS_KEY: ${S3__ACCESS_KEY}
       S3__SECRET_KEY: ${S3__SECRET_KEY}
+      LOG_LEVEL: ${LOG_LEVEL}
