@@ -45,12 +45,11 @@ class Application:
         uuid_ = UUID(id_)
         source_img = await self.storage.get_image(uuid_, PassportFiles.SOURCE)
 
-        details, images = self.recognizer.process_image(source_img)
-        # loop = asyncio.get_running_loop()
-        # with ProcessPoolExecutor() as executor:
-        #     details, images = await loop.run_in_executor(
-        #         executor, self.recognizer.process_image, source_img,
-        #     )
+        loop = asyncio.get_running_loop()
+        with ProcessPoolExecutor() as executor:
+            details, images = await loop.run_in_executor(
+                executor, self.recognizer.process_image, source_img,
+            )
         await asyncio.gather(
             self.storage.add_image(uuid_, PassportFiles.SCANNED, images.scanned),
             self.storage.add_image(uuid_, PassportFiles.PHOTO, images.photo),
