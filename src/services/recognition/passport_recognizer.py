@@ -8,8 +8,9 @@ import cv2
 import numpy as np
 import pytesseract
 from numpy import ndarray
-from src.entities.passport import Gender, PassportDetails, PassportImages
 from svgelements import SVG
+
+from src.entities.passport import Gender, PassportDetails, PassportImages
 
 from .exceptions import CornerDetectionError, ImageMismatchError, TextRecognitionError
 from .utils.filters import clahe_filter, sharp_filter
