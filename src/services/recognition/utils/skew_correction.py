@@ -1,18 +1,21 @@
+import logging
 from collections.abc import Sequence
 
 import cv2
 import numpy as np
 
 from .filters import clahe_filter
-from .shapes import Line, Point, Rectangle, find_intersection, get_distance, find_angle_deg
+from .shapes import Line, Point, Rectangle, find_angle_deg, find_intersection, get_distance
+
+logger = logging.getLogger(__name__)
 
 
 def correct_skew(  # noqa: PLR0913
         src: np.ndarray,
         ref: np.ndarray,
-        max_features: int = 5000,
+        max_features: int = 1000,
         min_features: int = 50,
-        max_distance: float = 25.0,
+        max_distance: float = 40.0,
         ransac_threshold: float = 5.0,
 ) -> np.ndarray:
     # Image Features & Alignment with OpenCV
@@ -33,9 +36,11 @@ def correct_skew(  # noqa: PLR0913
     # Extract good features
     matches = [m for m in matches if m.distance <= max_distance]
     matches = sorted(matches, key=lambda m: m.distance)
-    # print(len(matches))
-    # print(matches[0].distance)
-    # print(matches[len(matches)-1].distance)
+
+    first_distance = matches[0].distance
+    last_distance = matches[len(matches)-1].distance
+    logger.info(f"Found {len(matches)} matches. Distance: {first_distance}..{last_distance}")
+
     if len(matches) < min_features:
         msg = "Not enough matches are found"
         raise ValueError(msg)

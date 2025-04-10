@@ -6,7 +6,7 @@ import cv2
 from src.config import ROOT_DIR
 from src.services.recognition import PassportRecognizer
 
-SRC_PATH = Path(ROOT_DIR).joinpath("tests/unit/services/recognition/input/5.jpg")
+SRC_PATH = Path(ROOT_DIR).joinpath("tests/unit/services/recognition/input/1.jpg")
 
 async def main() -> None:
     recognizer = PassportRecognizer()
