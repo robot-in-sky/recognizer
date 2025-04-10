@@ -85,3 +85,10 @@ def find_intersection(l1: Line, l2: Line) -> Point | None:
     x = (l2.b - l1.b) / (l1.k - l2.k)
     y = l1.k * x + l1.b
     return Point(x, y)
+
+
+def find_angle_deg(l1: Line, l2: Line) -> float:
+    angle1 = math.atan(l1.k)
+    angle2 = math.atan(l2.k)
+    return abs(angle1 - angle2) * 180 / math.pi
+

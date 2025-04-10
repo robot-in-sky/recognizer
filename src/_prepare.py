@@ -7,7 +7,7 @@ from src.config import ROOT_DIR
 from src.services.recognition import PassportRecognizer
 from src.services.recognition.utils.image_grid import ImageGrid
 
-SRC_PATH = Path(ROOT_DIR).joinpath("tests/unit/services/recognition/input/4.jpg")
+SRC_PATH = Path(ROOT_DIR).joinpath("tests/unit/services/recognition/input/3.jpg")
 
 async def main() -> None:
     recognizer = PassportRecognizer()
