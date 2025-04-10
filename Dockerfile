@@ -18,5 +18,4 @@ RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
 RUN pip install --no-cache-dir -r requirements.txt
 RUN rm pyproject.toml poetry.lock
 COPY src/ ./src
-COPY env/ ./env
 CMD ["python", "src/main.py"]
