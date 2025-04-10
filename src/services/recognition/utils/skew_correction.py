@@ -4,15 +4,15 @@ import cv2
 import numpy as np
 
 from .filters import clahe_filter
-from .shapes import Line, Point, Rectangle, find_intersection, get_distance
+from .shapes import Line, Point, Rectangle, find_intersection, get_distance, find_angle_deg
 
 
 def correct_skew(  # noqa: PLR0913
         src: np.ndarray,
         ref: np.ndarray,
-        max_features: int = 1000,
+        max_features: int = 5000,
         min_features: int = 50,
-        max_distance: float = 40.0,
+        max_distance: float = 25.0,
         ransac_threshold: float = 5.0,
 ) -> np.ndarray:
     # Image Features & Alignment with OpenCV
@@ -117,13 +117,16 @@ def detect_corners(  # noqa: C901, PLR0912
             if intersect is None:
                 continue
             if outer.contains_point(intersect):
+                angle = find_angle_deg(edges[i], edges[j])
+                if angle < 80 or angle > 100:  # noqa: PLR2004
+                    continue
                 d1 = get_distance(edges[i].p1, intersect)
                 d2 = get_distance(edges[i].p2, intersect)
-                if min(d1, d2) > edges[i].length:
+                if min(d1, d2) > edges[i].length * 0.5:
                     continue
                 d3 = get_distance(edges[j].p1, intersect)
                 d4 = get_distance(edges[j].p2, intersect)
-                if min(d3, d4) > edges[j].length:
+                if min(d3, d4) > edges[j].length * 0.5:
                     continue
                 intersects.append(intersect)
 

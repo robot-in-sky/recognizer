@@ -10,7 +10,7 @@ def detect_box(src: np.ndarray, min_height: float) -> Rectangle:
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
     x1, y1, x2, y2 = None, None, None, None
-    margin = 1
+    margin = 2
     for idx, contour in enumerate(contours):
         x, y, w, h = cv2.boundingRect(contour)
         if h > min_height and hierarchy[0][idx][3] != -1:
