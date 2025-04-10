@@ -1,23 +1,22 @@
 [tool.poetry]
 name = "recognizer"
 version = "0.1.0"
-description = ""
+description = "Passport recognizer"
 authors = ["robot_in_sky <d.rabotinskiy@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 numpy = "^2.1.3"
 svgelements = "^1.9.6"
-opencv-contrib-python = "^4.10.0.84"
-opencv-python = "^4.10.0.84"
 pytesseract = "^0.3.13"
-aiobotocore = "^2.15.2"
 pydantic = "^2.10.3"
 pydantic-settings = "^2.6.1"
+opencv-contrib-python = "4.11.0.86"
 aio-pika = "^9.5.4"
 uuid7 = "^0.1.0"
 pyyaml = "^6.0.2"
+aiobotocore = "2.17.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -31,7 +30,7 @@ pytest-asyncio = "^0.23.7"
 types-pytz = "^2024.1.0.20240417"
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py312"
 line-length = 120
 src = ["app"]
 

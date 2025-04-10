@@ -1,12 +1,12 @@
 version: '3.8'
 volumes:
-  rabbitmq-data:
+  rabbitmq_data:
 services:
   rabbitmq:
     image: rabbitmq:3.12-management
     restart: unless-stopped
     volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
