@@ -21,8 +21,11 @@ class TestPassportRecognizer:
         "3",
         "4",
         "5",
+        "6",
         "7",
         "8",
+        "9",
+        "10",
     ])
     async def test_check_details(self, src_basename: str) -> None:
         input_path = Path("input")
@@ -39,11 +42,11 @@ class TestPassportRecognizer:
         assert count_mismatches(details.surname, expected.surname) <= 1
         assert count_mismatches(details.passport_no, expected.passport_no) <= 1
         assert details.country == expected.country
-        assert count_mismatches(str(details.birth_date), str(expected.birth_date)) <= 1
+        assert str(details.birth_date) == str(expected.birth_date)
         assert details.gender == expected.gender
-        # assert count_mismatches(details.birth_place, expected.birth_place) <= 1
-        # assert count_mismatches(str(details.issue_date), str(expected.issue_date)) <= 1
-        # assert count_mismatches(str(details.expiry_date), str(expected.expiry_date)) <= 1
+        assert count_mismatches(details.birth_place, expected.birth_place) <= 1
+        assert str(details.issue_date) == str(expected.issue_date)
+        assert str(details.expiry_date) == str(expected.expiry_date)
 
 
     @pytest.mark.parametrize("src_basename", [
