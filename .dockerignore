@@ -78,8 +78,8 @@ cython_debug/
 
 ### Custom
 .idea/
-.git
-.github
+.git/
+.github/
 tests/
 LICENSE
 README.md
