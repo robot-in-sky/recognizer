@@ -3,7 +3,7 @@ volumes:
   rabbitmq_data:
 services:
   rabbitmq:
-    image: rabbitmq:3.12-management
+    image: rabbitmq:4-management-alpine
     restart: unless-stopped
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
