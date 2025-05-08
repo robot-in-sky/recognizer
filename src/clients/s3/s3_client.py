@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from aiobotocore.session import ClientCreatorContext, get_session
 
-from .s3_settings import S3Settings
+from settings.s3_settings import S3Settings
 
 
 class S3Client:

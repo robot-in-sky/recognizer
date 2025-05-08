@@ -5,14 +5,14 @@ from typing import Any
 from uuid import UUID
 
 from aio_pika.patterns import JsonRPC
+
+from clients.amqp import AMQPClient
+from clients.s3 import S3Client
+from entities.passport import PassportFiles
+from entities.recognition import RecognitionResult, RecognitionType
 from services.recognition import PassportRecognizer
 from services.storage import AttachmentStorage
 from settings import AppSettings, LogSettings
-
-from src.entities.passport import PassportFiles
-from src.entities.recognition import RecognitionResult, RecognitionType
-from src.infrastructure.amqp import AMQPClient
-from src.infrastructure.s3 import S3Client
 
 
 class Application:

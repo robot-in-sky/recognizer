@@ -1,4 +1,4 @@
-from src.infrastructure.s3 import S3ClientError as StorageClientError
+from src.clients.s3 import S3ClientError as StorageClientError
 
 from .attachment_storage import AttachmentStorage
 

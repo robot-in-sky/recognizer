@@ -1,9 +1,9 @@
 from enum import StrEnum, auto
 from uuid import UUID
 
-from src.entities.base import Base
-from src.entities.captcha import CaptchaDetails
-from src.entities.passport import PassportDetails
+from entities.base import Base
+from entities.captcha import CaptchaDetails
+from entities.passport import PassportDetails
 
 
 class RecognitionType(StrEnum):

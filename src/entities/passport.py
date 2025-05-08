@@ -4,7 +4,7 @@ from enum import StrEnum, auto
 
 import numpy as np
 
-from src.entities.base import Base
+from entities.base import Base
 
 
 class Gender(StrEnum):

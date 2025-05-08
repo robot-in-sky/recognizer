@@ -1,0 +1,7 @@
+{
+  "model_path": "../outputs/keypoint_model_20250508_022614.pt",
+  "target_size": [640, 480],
+  "device": "cuda",
+  "source_dir": "../data/source",
+  "extensions": ["jpg", "jpeg", "png"]
+}

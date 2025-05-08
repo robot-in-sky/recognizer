@@ -81,6 +81,8 @@ cython_debug/
 .ruff_cache/
 env/*
 !env/*.example
+*.xcf
+scripts/passport_keypoints/data/*
+scripts/passport_keypoints/outputs/*
 tests/unit/services/recognition/input/*
 tests/unit/services/recognition/output/*
-*.xcf

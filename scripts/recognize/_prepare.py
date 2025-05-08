@@ -3,7 +3,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import cv2
-from src.config import ROOT_DIR
+
+from src.paths import ROOT_DIR
 from src.services.recognition import PassportRecognizer
 from src.services.recognition.utils.image_grid import ImageGrid
 

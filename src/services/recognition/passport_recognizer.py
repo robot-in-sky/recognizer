@@ -10,7 +10,7 @@ import pytesseract
 from numpy import ndarray
 from svgelements import SVG
 
-from src.entities.passport import Gender, PassportDetails, PassportImages
+from entities.passport import Gender, PassportDetails, PassportImages
 
 from .exceptions import CornerDetectionError, ImageMismatchError, TextRecognitionError
 from .utils.filters import clahe_filter, sharp_filter

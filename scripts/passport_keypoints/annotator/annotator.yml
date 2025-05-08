@@ -1,0 +1,8 @@
+source_dir: ../data/source
+extensions:
+  - .jpg
+  - .jpeg
+  - .png
+annotations_path: ../data/annotations.yml
+num_points: 6
+display_height: 900

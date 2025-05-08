@@ -10,6 +10,7 @@ RUN pip install "poetry==${POETRY_VERSION}"
 RUN apt-get update  \
     && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 \
+    opencv-python-headless \
     tesseract-ocr tesseract-ocr-eng tesseract-ocr-rus \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR $APP_DIR
