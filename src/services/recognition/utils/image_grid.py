@@ -6,7 +6,7 @@ class ImageGrid:
     def __init__(
             self,
             *,
-            columns: int = 4,
+            columns: int = 2,
             row_height: int = 420,
             header_height: int = 30,
             font_size: int = 15,

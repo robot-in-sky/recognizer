@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from src.clients.s3 import S3Client
+from clients.s3 import S3Client
 
 
 class AttachmentStorageBase:
