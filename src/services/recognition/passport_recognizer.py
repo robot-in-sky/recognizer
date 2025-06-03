@@ -13,8 +13,8 @@ from passporteye import read_mrz
 from svgelements import SVG
 
 from entities.passport import Gender, PassportDetails, PassportImages, PassportType
-from src.services.keypoints.keypoints_detector import KeypointsDetector
-from src.services.keypoints.validate import validate_pages
+from services.keypoints.keypoints_detector import KeypointsDetector
+from services.keypoints.validate import validate_pages
 
 from .exceptions import CornerDetectionError
 from .utils.filters import clahe_filter, sharp_filter
