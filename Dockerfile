@@ -13,7 +13,6 @@ RUN pip install "poetry==${POETRY_VERSION}"
 # Установка системных зависимостей
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1 libglib2.0-0 \
-    opencv-python-headless \
     tesseract-ocr \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -27,6 +26,9 @@ RUN mkdir -p /usr/share/tessdata_legacy && \
         https://github.com/tesseract-ocr/tessdata/raw/main/eng.traineddata && \
     wget -O /usr/share/tessdata_legacy/rus.traineddata \
         https://github.com/tesseract-ocr/tessdata/raw/main/rus.traineddata
+
+# Установка OpenCV без GUI
+RUN pip install --no-cache-dir opencv-python-headless
 
 WORKDIR $APP_DIR
 COPY pyproject.toml poetry.lock ./
