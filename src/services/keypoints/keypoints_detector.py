@@ -7,7 +7,9 @@ import yaml
 from torchvision import transforms
 from yacs.config import CfgNode as CN  # noqa: N817
 
-from .lib import get_affine_transform, get_final_preds, get_pose_net
+from .lib.inference import get_final_preds
+from .lib.pose_hrnet import get_pose_net
+from .lib.transforms import get_affine_transform
 
 # Константы для нормализации (ImageNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]  # Средние значения RGB для ImageNet
