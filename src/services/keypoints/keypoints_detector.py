@@ -7,9 +7,7 @@ import yaml
 from torchvision import transforms
 from yacs.config import CfgNode as CN  # noqa: N817
 
-from .lib import pose_hrnet
-from .lib.inference import get_final_preds
-from .lib.transforms import get_affine_transform
+from .lib import get_affine_transform, get_final_preds, get_pose_net
 
 # Константы для нормализации (ImageNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]  # Средние значения RGB для ImageNet
@@ -41,7 +39,7 @@ class KeypointsDetector:
             self.model_cfg = CN(yaml.safe_load(f))
 
         # Инициализация модели
-        self.model = pose_hrnet.get_pose_net(self.model_cfg, is_train=False)
+        self.model = get_pose_net(self.model_cfg, is_train=False)
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model.to(self.device)
         self.model.eval()
@@ -68,6 +66,6 @@ class KeypointsDetector:
             self.model_cfg,
             output.cpu().numpy(),
             np.array([center]),
-            np.array([scale])
+            np.array([scale]),
         )
         return coords[0].tolist()
