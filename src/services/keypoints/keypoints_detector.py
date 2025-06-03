@@ -40,7 +40,7 @@ class KeypointsDetector:
 
         # Инициализация модели
         self.model = get_pose_net(self.model_cfg, is_train=False)
-        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device, weights_only=False))
         self.model.to(self.device)
         self.model.eval()
 
