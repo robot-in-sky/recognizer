@@ -5,7 +5,7 @@ ENV POETRY_VERSION=1.7.1 \
     POETRY_HOME="/opt/poetry" \
     APP_DIR="/app"
 ENV PATH="$POETRY_HOME/bin:$PATH" \
-    PYTHONPATH=${APP_DIR}
+    PYTHONPATH="$APP_DIR/src"
 
 RUN python -m pip install --upgrade pip
 RUN pip install "poetry==${POETRY_VERSION}"
