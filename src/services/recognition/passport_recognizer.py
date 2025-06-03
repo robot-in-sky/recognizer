@@ -54,7 +54,7 @@ class PassportRecognizer:
         self.tesseract_config_rus = \
             "--oem 3 --psm 7 -c tessedit_char_whitelist=' ./-1234567890АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЫЪЭЮЯ'"
         self.mrz_config_legacy = \
-            "--oem 0 --tessdata-dir /home/robot/tessdata/legacy"
+            "--oem 0 --tessdata-dir /usr/share/tessdata_legacy"
 
 
     def get_mask(self, passport_type: PassportType) -> SVG:
