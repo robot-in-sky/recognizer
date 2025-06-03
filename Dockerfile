@@ -32,6 +32,11 @@ RUN mkdir -p /usr/share/tessdata && \
 # Установка OpenCV без GUI
 RUN pip install --no-cache-dir opencv-python-headless
 
+# Установка CPU-версий torch и torchvision
+RUN pip install --no-cache-dir --target=/install \
+    -r requirements.txt \
+    torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
 WORKDIR $APP_DIR
 COPY pyproject.toml poetry.lock ./
 RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
