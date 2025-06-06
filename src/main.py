@@ -8,6 +8,7 @@ from settings import AppSettings, ValidationError
 
 async def main() -> None:
     try:
+        AppSettings.save_dotenv_example()
         settings = AppSettings()
     except ValidationError as e:
         logging.error(e)

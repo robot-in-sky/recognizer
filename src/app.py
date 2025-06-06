@@ -47,12 +47,16 @@ class Application:
         source_img = await self.storage.get_image(uuid_, PassportFiles.SOURCE)
         logger.info("Source image recieved")
 
-        loop = asyncio.get_running_loop()
-        with ProcessPoolExecutor() as executor:
-            logger.info("Running image processing in executor")
-            details, images = await loop.run_in_executor(
-                executor, self.recognizer.process_image, source_img,
-            )
+        if self.settings.run_in_executor:
+            loop = asyncio.get_running_loop()
+            with ProcessPoolExecutor() as executor:
+                logger.info("Running image processing in executor")
+                details, images = await loop.run_in_executor(
+                    executor, self.recognizer.process_image, source_img,
+                )
+        else:
+            details, images = self.recognizer.process_image(source_img)
+
         await asyncio.gather(
             self.storage.add_image(uuid_, PassportFiles.SCANNED, images.scanned),
             self.storage.add_image(uuid_, PassportFiles.PHOTO, images.photo),

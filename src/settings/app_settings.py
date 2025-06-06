@@ -11,8 +11,5 @@ class AppSettings(AppSettingsBase):
     s3: S3Settings
 
     # Optional settings
+    run_in_executor: bool = True
     log: LogSettings = LogSettings()
-
-
-if __name__ == "__main__":
-    AppSettings.save_dotenv_example()
