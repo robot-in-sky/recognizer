@@ -1,3 +1,4 @@
+import logging
 import re
 from collections.abc import Sequence
 from datetime import date, datetime
@@ -23,6 +24,7 @@ from .utils.ocr_helpers import detect_box
 from .utils.shapes import Point, Rectangle
 from .utils.skew_correction import adjust_corners
 
+logger = logging.getLogger()
 
 class PassportRecognizer:
     def __init__(self) -> None:
@@ -344,9 +346,11 @@ class PassportRecognizer:
     def process_image(self, img: np.ndarray) -> tuple[PassportDetails, PassportImages]:
         grid_debug = ImageGrid(columns=3)
         grid_debug.add(img, "Original")
+        logger.debug("Processing image...")
 
         corners, img_detect = self.detect_corners(img)
         grid_debug.add(img_detect, "Page detection")
+        logger.debug("Corners detected")
 
         # Точки верхней и нижней страницы, полученные из KeypointsDetector
         # (в прямоугольниках нумеруем углы по часовой стрелке)
@@ -360,8 +364,9 @@ class PassportRecognizer:
         rois = self.extract_rois(scan_contrast, PassportType.RUS_10Y, draw=True)
         self.draw_markers(scan_contrast, [*markers_top, *markers_bottom])
         boxes = self.extract_text_boxes(rois, draw=True)
+        logger.debug("Boxes extracted")
         passport_type = self.detect_passport_type(boxes["title"])
-        # print("passport_type", passport_type)
+        logger.debug(f"Passport type detected: {passport_type}")
 
         if passport_type not in (PassportType.RUS_10Y, PassportType.OTHER):
             scan, markers_top, markers_bottom \
@@ -371,6 +376,7 @@ class PassportRecognizer:
             rois = self.extract_rois(scan_contrast, passport_type, draw=True)
             self.draw_markers(scan_contrast, [*markers_top, *markers_bottom])
             boxes = self.extract_text_boxes(rois, draw=True)
+            logger.debug(f"New text boxes extracted for passport type: {passport_type}")
 
 
         grid_debug.add(scan_contrast_sharp, "Scanned")
@@ -391,17 +397,19 @@ class PassportRecognizer:
             for id_, box in boxes.items():
                 details_dict[id_] = self.recognize_field(id_, box)
 
+            logger.debug(f"Recognized details: {details_dict}")
+
         # print("Details from fields:", details_dict)
         # if None in (details_dict["surname"], details_dict["given_name"]):
         #     raise TextRecognitionError
 
         details_mrz = self.recognize_mrz(boxes["mrz"], passport_type)
         details_mrz_dict = details_mrz.dict(exclude_none=True)
-        # print("Details from MRZ:", details_mrz_dict)
+        logger.debug(f"Details from MRZ: {details_mrz_dict}")
 
         details_dict |= details_mrz_dict
         details = PassportDetails(**details_dict)
-        # print("Details:", details)
+        logger.debug(f"Merged details: {details_dict}")
 
         photo = self.apply_adoptive_contrast(rois["photo"])
         photo = cv2.cvtColor(photo, cv2.COLOR_BGR2GRAY)
