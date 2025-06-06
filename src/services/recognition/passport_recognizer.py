@@ -232,11 +232,15 @@ class PassportRecognizer:
             return number_str
 
         def mrz_to_date(date_str: str) -> date | None:
-            """Преобразует строку вида 'YYMMDD' в объект datetime.date."""
             if len(date_str) != 6 or not date_str.isdigit():
                 return None
+            yy = int(date_str[:2])
+            mm = int(date_str[2:4])
+            dd = int(date_str[4:6])
+            century = 1900 if yy >= 50 else 2000
+            year = century + yy
             try:
-                return datetime.strptime(date_str, "%y%m%d").date()  # noqa: DTZ007
+                return date(year, mm, dd)
             except ValueError:
                 return None
 
