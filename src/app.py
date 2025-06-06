@@ -14,6 +14,7 @@ from services.recognition import PassportRecognizer
 from services.storage import AttachmentStorage
 from settings import AppSettings, LogSettings
 
+logger = logging.getLogger()
 
 class Application:
     def __init__(self, settings: AppSettings) -> None:
@@ -44,9 +45,11 @@ class Application:
     async def recognize_passport(self, id_: str) -> dict[str, Any]:
         uuid_ = UUID(id_)
         source_img = await self.storage.get_image(uuid_, PassportFiles.SOURCE)
+        logger.info("Source image recieved")
 
         loop = asyncio.get_running_loop()
         with ProcessPoolExecutor() as executor:
+            logger.info("Running image processing in executor")
             details, images = await loop.run_in_executor(
                 executor, self.recognizer.process_image, source_img,
             )
