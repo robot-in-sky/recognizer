@@ -11,5 +11,5 @@ class AppSettings(AppSettingsBase):
     s3: S3Settings
 
     # Optional settings
-    run_in_executor: bool = True
+    process_executor: bool = False
     log: LogSettings = LogSettings()
