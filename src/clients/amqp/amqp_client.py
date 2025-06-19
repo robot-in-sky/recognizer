@@ -5,7 +5,7 @@ from typing import Any
 
 import aio_pika
 
-from .amqp_settings import AMQPSettings
+from settings.amqp_settings import AMQPSettings
 
 
 class AMQPClient:

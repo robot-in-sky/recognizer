@@ -5,15 +5,16 @@ from typing import Any
 from uuid import UUID
 
 from aio_pika.patterns import JsonRPC
+
+from clients.amqp import AMQPClient
+from clients.s3 import S3Client
+from entities.passport import PassportFiles
+from entities.recognition import RecognitionResult, RecognitionType
 from services.recognition import PassportRecognizer
 from services.storage import AttachmentStorage
 from settings import AppSettings, LogSettings
 
-from src.entities.passport import PassportFiles
-from src.entities.recognition import RecognitionResult, RecognitionType
-from src.infrastructure.amqp import AMQPClient
-from src.infrastructure.s3 import S3Client
-
+logger = logging.getLogger()
 
 class Application:
     def __init__(self, settings: AppSettings) -> None:
@@ -30,26 +31,23 @@ class Application:
     def configure_logging(settings: LogSettings) -> None:
         logging.basicConfig(level=settings.level)
 
-    """
-    async def make_request(self) -> None:
-        request_id = str(uuid7())
-        image = cv2.imread(ROOT_DIR.joinpath("tests/input/2.jpg"))
-        await self.storage.add_image(request_id, "source.png", image)
-        result = await self.deps.rpc.proxy.recognize_passport(request_id=request_id)
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(result)
-    """
-
 
     async def recognize_passport(self, id_: str) -> dict[str, Any]:
         uuid_ = UUID(id_)
         source_img = await self.storage.get_image(uuid_, PassportFiles.SOURCE)
+        logger.info("Source image recieved")
 
-        loop = asyncio.get_running_loop()
-        with ProcessPoolExecutor() as executor:
-            details, images = await loop.run_in_executor(
-                executor, self.recognizer.process_image, source_img,
-            )
+        if self.settings.process_executor:
+            loop = asyncio.get_running_loop()
+            with ProcessPoolExecutor() as executor:
+                logger.info("Running image processing in executor")
+                details, images = await loop.run_in_executor(
+                    executor, self.recognizer.process_image, source_img,
+                )
+        else:
+            logger.info("Running image processing")
+            details, images = self.recognizer.process_image(source_img)
+
         await asyncio.gather(
             self.storage.add_image(uuid_, PassportFiles.SCANNED, images.scanned),
             self.storage.add_image(uuid_, PassportFiles.PHOTO, images.photo),

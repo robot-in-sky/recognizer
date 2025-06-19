@@ -4,7 +4,13 @@ from enum import StrEnum, auto
 
 import numpy as np
 
-from src.entities.base import Base
+from entities.base import Base
+
+
+class PassportType(StrEnum):
+    RUS_5Y = auto()
+    RUS_10Y = auto()
+    OTHER = auto()
 
 
 class Gender(StrEnum):
@@ -13,15 +19,16 @@ class Gender(StrEnum):
 
 
 class PassportDetails(Base):
-    surname: str | None
-    given_name: str | None
-    passport_no: str | None
-    country: str | None
-    birth_date: date | None
-    gender: Gender | None
-    birth_place: str | None
-    issue_date: date | None
-    expiry_date: date | None
+    surname: str | None = None
+    given_name: str | None = None
+    passport_no: str | None = None
+    country: str | None = None
+    nationality: str | None = None
+    birth_date: date | None = None
+    gender: Gender | None = None
+    birth_place: str | None = None
+    issue_date: date | None = None
+    expiry_date: date | None = None
 
 
 @dataclass

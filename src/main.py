@@ -2,8 +2,8 @@ import asyncio
 import logging
 import sys
 
-from src.app import Application
-from src.settings import AppSettings, ValidationError
+from app import Application
+from settings import AppSettings, ValidationError
 
 
 async def main() -> None:

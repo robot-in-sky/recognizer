@@ -3,7 +3,7 @@ from enum import StrEnum
 
 import numpy as np
 
-from src.entities.base import Base
+from entities.base import Base
 
 
 class CaptchaDetails(Base):

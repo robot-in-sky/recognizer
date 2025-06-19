@@ -1,7 +1,7 @@
-from src.infrastructure.amqp import AMQPSettings
-from src.infrastructure.s3 import S3Settings
-from src.settings.app_settings_base import AppSettingsBase
-from src.settings.log_settings import LogSettings
+from .amqp_settings import AMQPSettings
+from .base.app_settings_base import AppSettingsBase
+from .log_settings import LogSettings
+from .s3_settings import S3Settings
 
 
 class AppSettings(AppSettingsBase):
@@ -11,8 +11,5 @@ class AppSettings(AppSettingsBase):
     s3: S3Settings
 
     # Optional settings
+    process_executor: bool = False
     log: LogSettings = LogSettings()
-
-
-if __name__ == "__main__":
-    AppSettings.save_dotenv_example()

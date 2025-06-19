@@ -3,9 +3,10 @@ from pathlib import Path
 import cv2
 import pytest
 import yaml
-from src.entities.passport import PassportDetails
-from src.services.recognition import PassportRecognizer
-from src.services.recognition.exceptions import CornerDetectionError, ImageMismatchError
+
+from entities.passport import PassportDetails
+from services.recognition import PassportRecognizer
+from services.recognition.exceptions import CornerDetectionError, ImageMismatchError
 
 
 def count_mismatches(str_value: str, expected_value: str) -> int:

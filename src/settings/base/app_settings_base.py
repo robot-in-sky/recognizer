@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from pydantic_core import PydanticUndefined
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from src.config import ENV_FILE_PATH
+from paths import ENV_FILE_PATH
 
 _logger = logging.getLogger(__name__)
 

@@ -10,7 +10,7 @@ from .shapes import Line, Point, Rectangle, find_angle_deg, find_intersection, g
 logger = logging.getLogger(__name__)
 
 
-def correct_skew(  # noqa: PLR0913
+def correct_skew_orb(  # noqa: PLR0913
         src: np.ndarray,
         ref: np.ndarray,
         max_features: int = 1000,
@@ -18,6 +18,9 @@ def correct_skew(  # noqa: PLR0913
         max_distance: float = 40.0,
         ransac_threshold: float = 5.0,
 ) -> np.ndarray:
+    # Коррекция перекоса изображения по референсу с использованием cv2 ORB.
+    # БОЛЬШЕ НЕ ИСПОЛЬЗУЕМ. УГЛЫ ИЩЕМ ЧЕРЕЗ Keypoints Detector
+
     # Image Features & Alignment with OpenCV
     # https://www.youtube.com/watch?v=_o6fSMCmNnQ
 
@@ -60,13 +63,16 @@ def correct_skew(  # noqa: PLR0913
     return cv2.warpPerspective(src, h, (width, height))
 
 
-def detect_corners(  # noqa: C901, PLR0912
+def detect_corners_by_segments(  # noqa: C901, PLR0912
         src: np.ndarray,
         *,
         roi_centerline: Rectangle,
         roi_bandwidth: int,
         edge_min_length: int,
     ) -> tuple[list[Point | None], np.ndarray | None]:
+    # Пример поиска углов по пересечению сегментов.
+    # Код может пригодиться в будущем для уточнения координат точек.
+    # БОЛЬШЕ НЕ ИСПОЛЬЗУЕМ. УГЛЫ ИЩЕМ ЧЕРЕЗ Keypoints Detector
 
     src = clahe_filter(src)
     src_gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
@@ -158,7 +164,6 @@ def detect_corners(  # noqa: C901, PLR0912
             cv2.circle(output, corner.tup, 8, (0, 255, 255), -1)
 
     return detected, output
-
 
 def adjust_corners(
         src: np.ndarray,
